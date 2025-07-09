@@ -235,7 +235,7 @@ histdb-fzf-widget() {
   while [[ "$exitkey" != "" && "$exitkey" != "esc" ]]; do
     histdb-fzf-log "------------------- TURN -------------------"
     histdb-fzf-log "Exitkey $exitkey"
-    # the f keys are a shortcut to select a certain mode
+    # the [ key is a shortcut to cycle through modes
 		if [[ $exitkey == "f5" ]]; then
 			mode=$((($mode - 1) % $#histdb_fzf_modes))
 			if [[ $cmd_opts_extra == '' ]]; then
@@ -243,9 +243,9 @@ histdb-fzf-widget() {
 			else
 				cmd_opts_extra=''
 			fi
-		elif [[ $exitkey =~ "f." ]]; then
-      mode=${exitkey[$(($MBEGIN+1)),$MEND]}
-      histdb-fzf-log "mode changed to ${histdb_fzf_modes[$mode]} ($mode)"
+		elif [[ $exitkey == "[" ]]; then
+      # mode will be incremented at the end of the switch statement
+      histdb-fzf-log "switching to next mode"
     fi
     histdb-fzf-log "Extra Opts $cmd_opts_extra"
     # based on the mode, we use the options for histdb options
@@ -253,22 +253,22 @@ histdb-fzf-widget() {
       'session')
         cmd_opts="-s"
         typ="Session local history ${fg[blue]}${HISTDB_SESSION}${reset_color}"
-        switchhints="${fg[blue]}F1: session${reset_color} ${bold_color}F2: directory${reset_color} ${bold_color}F3: global${reset_color} ${bold_color}F4: everywhere${reset_color} -- F5: toggle grouping"
+        switchhints="${fg[blue]}[: session${reset_color} → directory → global → everywhere -- F5: toggle grouping"
         ;;
       'loc')
         cmd_opts="-d"
         typ="Directory local history ${fg[blue]}$(pwd)${reset_color}"
-        switchhints="${bold_color}F1: session${reset_color} ${fg[blue]}F2: directory${reset_color} ${bold_color}F3: global${reset_color} ${bold_color}F4: everywhere${reset_color} -- F5: toggle grouping"
+        switchhints="[: session → ${fg[blue]}directory${reset_color} → global → everywhere -- F5: toggle grouping"
         ;;
       'global')
         cmd_opts=""
         typ="global history ${fg[blue]}$(hostname)${reset_color}"
-        switchhints="${bold_color}F1: session${reset_color} ${bold_color}F2: directory${reset_color} ${fg[blue]}F3: global${reset_color} ${bold_color}F4: everywhere${reset_color} -- F5: toggle grouping"
+        switchhints="[: session → directory → ${fg[blue]}global${reset_color} → everywhere -- F5: toggle grouping"
         ;;
       'everywhere')
         cmd_opts="-t"
         typ='everywhere'
-        switchhints="${bold_color}F1: session${reset_color} ${bold_color}F2: directory${reset_color} ${bold_color}F3: global${reset_color} ${fg[blue]}F4: everywhere${reset_color} -- F5: toggle grouping"
+        switchhints="[: session → directory → global → ${fg[blue]}everywhere${reset_color} -- F5: toggle grouping"
         ;;
     esac
 		mode=$(((($mode + 1) % $#histdb_fzf_modes)))
@@ -279,7 +279,7 @@ histdb-fzf-widget() {
       --ansi
       --header='${typ}${NL}${switchhints}${NL}―――――――――――――――――――――――――' --delimiter=' '
       -n2.. --with-nth=2..
-      --tiebreak=index --expect='esc,ctrl-r,f1,f2,f3,f4,f5'
+      --tiebreak=index --expect='esc,ctrl-r,[,f5'
       --bind 'ctrl-d:page-down,ctrl-u:page-up'
       --print-query
       --preview='source ${FZF_HISTDB_FILE}; histdb-detail ${HISTDB_FILE} {1}' --preview-window=right:50%:wrap
