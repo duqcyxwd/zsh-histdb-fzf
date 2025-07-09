@@ -185,7 +185,7 @@ histdb-detail(){
   fi
 
   printf "\033[1mLast run\033[0m\n\nTime:      %s\nStatus:    %s\nDuration:  %s sec.\nHost:      %s\nDirectory: %s\nSessionid: %s\nCommand id: %s\nCommand:\n\n" ${array[0]}  ${array[1]}  ${array[2]}  ${array[3]} ${array[4]} ${array[5]} ${array[6]} ${array[7]}
-  echo "${array[8,-1]}"
+  histdb-highlight-command "${array[8,-1]}"
 }
 
 histdb-get-command(){
@@ -202,6 +202,17 @@ histdb-get-command(){
       history.id='${CMD_ID}'
   "
   printf "%s" "$(sqlite3 -cmd ".timeout 1000" "${HISTDB_FILE}" "$query")"
+}
+
+# Function to highlight command using bat
+histdb-highlight-command() {
+  local cmd="$1"
+  # 如果未安装 bat，直接输出原始命令
+  if ! command -v bat &>/dev/null; then
+    echo "$cmd"
+    return
+  fi
+  echo "$cmd" | bat --language sh --color=always --plain
 }
 
 histdb-fzf-widget() {
